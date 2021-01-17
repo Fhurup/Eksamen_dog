@@ -1,7 +1,10 @@
 package rest;
 
+import dto.DogDTO;
+import entities.Dog;
 import entities.RenameMe;
 import entities.Role;
+import entities.Search;
 import entities.User;
 import utils.EMF_Creator;
 import io.restassured.RestAssured;
@@ -9,6 +12,7 @@ import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import java.net.URI;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
@@ -16,6 +20,7 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,6 +31,16 @@ import org.junit.jupiter.api.Test;
 //@Disabled
 
 public class DemoResourceTest {
+
+    User user;
+    User admin;
+    User both;
+    Role userRole;
+    Role adminRole;
+    Dog dog;
+    Search search;
+    Search search2;
+    Search search3;
 
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api";
@@ -70,23 +85,33 @@ public class DemoResourceTest {
         try {
             em.getTransaction().begin();
             //Delete existing users and roles to get a "fresh" database
+            em.createQuery("delete from Dog").executeUpdate();
             em.createQuery("delete from User").executeUpdate();
             em.createQuery("delete from Role").executeUpdate();
+            em.createQuery("DELETE from Search").executeUpdate();
 
-            Role userRole = new Role("user");
-            Role adminRole = new Role("admin");
-            User user = new User("user", "test");
+            dog = new Dog("John", "lille", "14", "Beagle");
+            search = new Search("Beagle");
+            search2 = new Search("Beagle");
+            search3 = new Search("atika");
+            userRole = new Role("user");
+            adminRole = new Role("admin");
+            user = new User("user", "test");
             user.addRole(userRole);
-            User admin = new User("admin", "test");
+            admin = new User("admin", "test");
             admin.addRole(adminRole);
-            User both = new User("user_admin", "test");
+            both = new User("user_admin", "test");
             both.addRole(userRole);
             both.addRole(adminRole);
             em.persist(userRole);
+            user.addDog(dog);
             em.persist(adminRole);
             em.persist(user);
             em.persist(admin);
             em.persist(both);
+            em.persist(search);
+            em.persist(search2);
+            em.persist(search3);
             //System.out.println("Saved test data to database");
             em.getTransaction().commit();
         } finally {
@@ -151,6 +176,75 @@ public class DemoResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .body("dogs.size()", is(59));
+    }
+
+    @Test
+    public void testAddDog() throws Exception {
+
+        Dog dog2 = new Dog("Johnny", "igår", "Tyk", "beagle");
+        DogDTO dDTO = new DogDTO(dog2);
+        given()
+                .contentType("application/json")
+                .body(dDTO)
+                .when()
+                .post("/dogs/adddog/" + user.getUserName())
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("name", equalTo("Johnny"))
+                .body("dateOfBirth", equalTo("igår"))
+                .body("info", equalTo("Tyk"))
+                .body("breed", equalTo("beagle"));
+
+        List<DogDTO> DogDTOs;
+        DogDTOs = given()
+                .contentType("application/json")
+                .when()
+                .get("/dogs/mydogs/" + user.getUserName()).then()
+                .extract().body().jsonPath().getList("all", DogDTO.class);
+
+        assertThat(DogDTOs, iterableWithSize(2));
+    }
+
+    @Test
+    public void testGetAllFavorites() throws Exception {
+
+        List<DogDTO> DogDTOs;
+        DogDTOs = given()
+                .contentType("application/json")
+                .when()
+                .get("/dogs/mydogs/" + user.getUserName()).then()
+                .extract().body().jsonPath().getList("all", DogDTO.class);
+
+        assertThat(DogDTOs, iterableWithSize(1));
+    }
+
+    @Test
+    public void testGetAllSearches() throws Exception {
+        login("admin", "test");
+        given()
+                .contentType("application/json")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
+                .when()
+                .get("/dogs/totalsearches").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body(equalTo("[3]"));
+    }
+    
+    @Test
+    public void testGetAllBreedSearches() throws Exception {
+        login("admin", "test");
+        given()
+                .contentType("application/json")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
+                .when()
+                .get("/dogs/breedsearch/" + search.getBreed()).then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body(equalTo("[2]"));
     }
 
 }

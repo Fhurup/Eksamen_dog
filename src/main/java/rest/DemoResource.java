@@ -145,19 +145,21 @@ public class DemoResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("breedsearch/{breed}")
+    @RolesAllowed("admin")
     public String getBreedSearches(@PathParam("breed") String breed) throws IOException {
         String amountOfBreedSearches = FACADE.breedSearches(breed);
 
-        return GSON.toJson(amountOfBreedSearches);
+        return amountOfBreedSearches;
     }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("totalsearches")
+    @RolesAllowed("admin")
     public String getAmountOfSearches() throws IOException {
         String amountOfSearches = FACADE.totalSearches();
 
-        return GSON.toJson(amountOfSearches);
+        return amountOfSearches;
     }
     
 //    @Path("dogname/{name}/user/{user}")
