@@ -76,6 +76,33 @@ public class DogFacade {
             em.close();
         }
     }
+    
+//    public String deleteDog(String name, String dogName){
+//        EntityManager em = emf.createEntityManager();
+//        
+//        try{
+//            
+//            em.getTransaction().begin();
+//
+//            User user = em.find(User.class, name);
+//            List<Dog> dogList = user.getDogs();
+//            for(Dog d : dogList){
+//                if(d.getName().equals(dogName)){
+//                    dogList.remove(d);
+//                }
+//            }
+//            em.persist(user);
+//
+//            em.getTransaction().commit();
+//
+//            String returnMsg = "Deleted " + dogName;
+//
+//            return returnMsg;
+//
+//        }finally{
+//            em.close();
+//        }
+//    }
 
     public searchDTO search(String breedSearch) {
         EntityManager em = emf.createEntityManager();

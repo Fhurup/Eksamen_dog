@@ -124,7 +124,7 @@ public class DemoResourceTest {
     public void testCountAll() throws Exception {
         given()
                 .contentType("application/json")
-                .get("/info/all").then()
+                .get("/dogs/all").then()
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .body(equalTo("[3]"));
@@ -134,7 +134,7 @@ public class DemoResourceTest {
     public void testGetSearch() throws Exception {
         given()
                 .contentType("application/json")
-                .get("/info/search/beagle").then()
+                .get("/dogs/search/beagle").then()
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .body("info", notNullValue())
@@ -147,7 +147,7 @@ public class DemoResourceTest {
     public void testGetBreeds() {
         given()
                 .contentType("application/json")
-                .get("/info/breeds").then()
+                .get("/dogs/breeds").then()
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .body("dogs.size()", is(59));

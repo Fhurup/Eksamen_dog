@@ -35,12 +35,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.PathParam;
 
 /**
  * @author lam@cphbusiness.dk
  */
-@Path("info")
+@Path("dogs")
 public class DemoResource {
 
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
@@ -131,12 +132,12 @@ public class DemoResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search/{breed}")
-    public String searchBreed(@PathParam("breed") String breed) throws IOException {
+    public String searchBreed(@PathParam("breed") String breed) throws IOException, InterruptedException, TimeoutException, TimeoutException, ExecutionException {
         FACADE.search(breed);
 
         dogFetcher df = new dogFetcher();
 
-        CompleteDogDTO completeDogDTO = df.searchDog(breed);
+        CompleteDogDTO completeDogDTO = df.searchDog(es, breed);
 
         return GSON.toJson(completeDogDTO);
     }
@@ -158,6 +159,14 @@ public class DemoResource {
 
         return GSON.toJson(amountOfSearches);
     }
+    
+//    @Path("dogname/{name}/user/{user}")
+//    @DELETE
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public String deleteFavorit(@PathParam("user") String user, @PathParam("name") String name) {
+//        String s = FACADE.deleteDog(user, name);
+//        return GSON.toJson(s);
+//    }
 
 
     @GET

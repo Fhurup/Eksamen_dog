@@ -81,6 +81,10 @@ public class User implements Serializable {
         }
     }
 
+    public List<Dog> getDogs() {
+        return dogs;
+    }
+
     public void removePhone(Phone phone) {
         if (phone != null) {
             this.phones.remove(phone);
